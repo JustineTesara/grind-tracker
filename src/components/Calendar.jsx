@@ -7,6 +7,19 @@ const TYPE_STYLE = {
   rest: { bg: "rgba(107,107,128,0.12)", color: "#6b6b80", icon: "😴" },
 };
 
+const calStyle = `
+  @media (max-width: 600px) {
+    .grind-cal-pill-text { display: none; }
+    .grind-cal-dur       { display: none; }
+    .grind-cal-cell      { min-height: 56px !important; padding: 5px !important; }
+    .grind-cal-dow       { font-size: 8px !important; padding: 7px 0 !important; }
+    .grind-cal-daynum    { width: 18px !important; height: 18px !important; font-size: 9px !important; }
+  }
+  @media (max-width: 380px) {
+    .grind-cal-cell { min-height: 44px !important; padding: 3px !important; }
+  }
+`;
+
 function dateStr(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
@@ -37,11 +50,12 @@ export default function Calendar({
 
   const cells = [];
 
-  // Empty cells before the 1st
+  // Empty cells before the 1st of the month
   for (let i = 0; i < firstDayOfMonth; i++) {
     cells.push(
       <div
         key={`empty-${i}`}
+        className="grind-cal-cell"
         style={{
           minHeight: "90px",
           backgroundColor: "rgba(0,0,0,0.1)",
@@ -61,6 +75,7 @@ export default function Calendar({
     cells.push(
       <div
         key={ds}
+        className="grind-cal-cell"
         onClick={() => onDayClick(ds)}
         style={{
           minHeight: "90px",
@@ -82,8 +97,9 @@ export default function Calendar({
             : "transparent")
         }
       >
-        {/* Day number */}
+        {/* Day number circle */}
         <div
+          className="grind-cal-daynum"
           style={{
             width: "24px",
             height: "24px",
@@ -114,6 +130,7 @@ export default function Calendar({
             a.duration_hours > 0
               ? `${a.duration_hours}h ${a.duration_minutes}m`
               : `${a.duration_minutes}m`;
+
           return (
             <div
               key={a.id}
@@ -133,7 +150,10 @@ export default function Calendar({
               }}
             >
               <span style={{ fontSize: "9px" }}>{s.icon}</span>
+
+              {/* Hidden on screens < 600px */}
               <span
+                className="grind-cal-pill-text"
                 style={{
                   fontSize: "10px",
                   color: s.color,
@@ -150,8 +170,11 @@ export default function Calendar({
                     ? "Gym"
                     : `${a.distance ?? "—"}km`}
               </span>
+
+              {/* Duration — hidden on screens < 600px */}
               {a.type !== "rest" && (
                 <span
+                  className="grind-cal-dur"
                   style={{
                     fontSize: "9px",
                     color: "#333330",
@@ -166,6 +189,7 @@ export default function Calendar({
             </div>
           );
         })}
+
         {acts.length > 2 && (
           <div
             style={{
@@ -183,43 +207,50 @@ export default function Calendar({
   }
 
   return (
-    <div
-      style={{
-        backgroundColor: "#141416",
-        border: "1px solid #1c1c1f",
-        borderRadius: "14px",
-        overflow: "hidden",
-      }}
-    >
-      {/* Day-of-week header */}
+    <>
+      {/* Inject responsive styles */}
+      <style>{calStyle}</style>
+
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(7, 1fr)",
-          borderBottom: "1px solid #1c1c1f",
+          backgroundColor: "#141416",
+          border: "1px solid #1c1c1f",
+          borderRadius: "14px",
+          overflow: "hidden",
         }}
       >
-        {DAYS_OF_WEEK.map((d) => (
-          <div
-            key={d}
-            style={{
-              padding: "10px 0",
-              textAlign: "center",
-              fontFamily: "DM Mono, monospace",
-              fontSize: "10px",
-              color: "#333330",
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-            }}
-          >
-            {d}
-          </div>
-        ))}
+        {/* Day-of-week header */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(7, 1fr)",
+            borderBottom: "1px solid #1c1c1f",
+          }}
+        >
+          {DAYS_OF_WEEK.map((d) => (
+            <div
+              key={d}
+              className="grind-cal-dow"
+              style={{
+                padding: "10px 0",
+                textAlign: "center",
+                fontFamily: "DM Mono, monospace",
+                fontSize: "10px",
+                color: "#333330",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+              }}
+            >
+              {d}
+            </div>
+          ))}
+        </div>
+
+        {/* Calendar grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)" }}>
+          {cells}
+        </div>
       </div>
-      {/* Calendar grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)" }}>
-        {cells}
-      </div>
-    </div>
+    </>
   );
 }

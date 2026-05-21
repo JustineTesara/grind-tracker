@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -23,7 +24,7 @@ function NavItem({ icon, label, active, onClick }) {
         alignItems: "center",
         gap: "10px",
         width: "100%",
-        padding: "10px 24px",
+        padding: "11px 24px",
         fontSize: "13.5px",
         fontFamily: "DM Sans, sans-serif",
         fontWeight: active ? "500" : "400",
@@ -31,7 +32,6 @@ function NavItem({ icon, label, active, onClick }) {
         background: active ? "rgba(61,214,140,0.07)" : "transparent",
         borderLeft: active ? "2px solid #3dd68c" : "2px solid transparent",
         border: "none",
-        borderLeft: active ? "2px solid #3dd68c" : "2px solid transparent",
         cursor: "pointer",
         textAlign: "left",
         transition: "all 0.15s ease",
@@ -40,10 +40,11 @@ function NavItem({ icon, label, active, onClick }) {
         if (!active) e.currentTarget.style.color = "#8a8880";
       }}
       onMouseLeave={(e) => {
-        if (!active) e.currentTarget.style.color = "#555450";
+        if (!active)
+          e.currentTarget.style.color = active ? "#f0ede8" : "#555450";
       }}
     >
-      <span style={{ fontSize: "15px", width: "18px", textAlign: "center" }}>
+      <span style={{ fontSize: "16px", width: "20px", textAlign: "center" }}>
         {icon}
       </span>
       {label}
@@ -54,30 +55,29 @@ function NavItem({ icon, label, active, onClick }) {
 export default function Sidebar({ activePage, onNavigate }) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   async function handleSignOut() {
     await signOut();
     navigate("/auth");
   }
 
-  return (
-    <aside
-      style={{
-        width: "220px",
-        minHeight: "100vh",
-        backgroundColor: "#141416",
-        borderRight: "1px solid #1c1c1f",
-        display: "flex",
-        flexDirection: "column",
-        position: "fixed",
-        top: 0,
-        left: 0,
-        zIndex: 50,
-      }}
-    >
+  function handleNav(id) {
+    onNavigate(id);
+    setMobileOpen(false); // close on mobile after selecting
+  }
+
+  const sidebarContent = (
+    <>
       {/* Logo */}
       <div
-        style={{ padding: "28px 24px 24px", borderBottom: "1px solid #1c1c1f" }}
+        style={{
+          padding: "24px 24px 20px",
+          borderBottom: "1px solid #1c1c1f",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
       >
         <h1
           style={{
@@ -85,18 +85,34 @@ export default function Sidebar({ activePage, onNavigate }) {
             fontSize: "22px",
             fontWeight: "800",
             color: "#f0ede8",
-            letterSpacing: "0.03em",
             margin: 0,
           }}
         >
           GRIND<span style={{ color: "#3dd68c" }}>.</span>
         </h1>
+        {/* Close button — mobile only */}
+        <button
+          onClick={() => setMobileOpen(false)}
+          style={{
+            display: "none",
+            background: "none",
+            border: "none",
+            color: "#555450",
+            fontSize: "22px",
+            cursor: "pointer",
+            padding: "4px",
+            lineHeight: 1,
+          }}
+          className="sidebar-close"
+        >
+          ✕
+        </button>
       </div>
 
       {/* Nav */}
       <nav
         style={{
-          paddingTop: "20px",
+          paddingTop: "16px",
           display: "flex",
           flexDirection: "column",
           gap: "2px",
@@ -104,7 +120,7 @@ export default function Sidebar({ activePage, onNavigate }) {
       >
         <p
           style={{
-            padding: "0 24px 10px",
+            padding: "0 24px 8px",
             fontSize: "10px",
             fontFamily: "DM Mono, monospace",
             letterSpacing: "0.12em",
@@ -121,13 +137,13 @@ export default function Sidebar({ activePage, onNavigate }) {
             icon={item.icon}
             label={item.label}
             active={activePage === item.id}
-            onClick={() => onNavigate(item.id)}
+            onClick={() => handleNav(item.id)}
           />
         ))}
       </nav>
 
       {/* Activity Key */}
-      <div style={{ padding: "24px 24px 0" }}>
+      <div style={{ padding: "20px 24px 0" }}>
         <p
           style={{
             fontSize: "10px",
@@ -135,12 +151,12 @@ export default function Sidebar({ activePage, onNavigate }) {
             letterSpacing: "0.12em",
             color: "#2e2e30",
             textTransform: "uppercase",
-            marginBottom: "12px",
+            marginBottom: "10px",
           }}
         >
           Activity Key
         </p>
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "7px" }}>
           {ACTIVITY_KEY.map((item) => (
             <div
               key={item.label}
@@ -220,6 +236,125 @@ export default function Sidebar({ activePage, onNavigate }) {
           → Sign out
         </button>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      <style>{`
+        /* ── Desktop sidebar ── */
+        .grind-sidebar-desktop {
+          width: 220px;
+          min-height: 100vh;
+          background-color: #141416;
+          border-right: 1px solid #1c1c1f;
+          display: flex;
+          flex-direction: column;
+          position: fixed;
+          top: 0; left: 0;
+          z-index: 50;
+        }
+
+        /* ── Mobile: hide desktop sidebar, show hamburger ── */
+        @media (max-width: 768px) {
+          .grind-sidebar-desktop { display: none !important; }
+          .grind-hamburger { display: flex !important; }
+        }
+
+        /* ── Mobile drawer overlay ── */
+        .grind-mobile-overlay {
+          display: none;
+          position: fixed; inset: 0;
+          background: rgba(0,0,0,0.6);
+          backdrop-filter: blur(4px);
+          z-index: 90;
+        }
+        .grind-mobile-overlay.open { display: block; }
+
+        /* ── Mobile drawer panel ── */
+        .grind-mobile-drawer {
+          position: fixed;
+          top: 0; left: 0;
+          width: 260px; height: 100vh;
+          background-color: #141416;
+          border-right: 1px solid #1e1e22;
+          display: flex;
+          flex-direction: column;
+          z-index: 100;
+          transform: translateX(-100%);
+          transition: transform 0.25s ease;
+        }
+        .grind-mobile-drawer.open { transform: translateX(0); }
+
+        /* Show close button inside mobile drawer */
+        .grind-mobile-drawer .sidebar-close { display: flex !important; }
+      `}</style>
+
+      {/* Desktop sidebar */}
+      <aside className="grind-sidebar-desktop">{sidebarContent}</aside>
+
+      {/* Mobile overlay — darkens background when drawer is open */}
+      <div
+        className={`grind-mobile-overlay ${mobileOpen ? "open" : ""}`}
+        onClick={() => setMobileOpen(false)}
+      />
+
+      {/* Mobile drawer */}
+      <div className={`grind-mobile-drawer ${mobileOpen ? "open" : ""}`}>
+        {sidebarContent}
+      </div>
+
+      {/* Hamburger button — only visible on mobile, sits in top-left */}
+      <button
+        className="grind-hamburger"
+        onClick={() => setMobileOpen(true)}
+        style={{
+          display: "none",
+          position: "fixed",
+          top: "14px",
+          left: "16px",
+          zIndex: 80,
+          background: "#141416",
+          border: "1px solid #242428",
+          borderRadius: "8px",
+          width: "38px",
+          height: "38px",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          flexDirection: "column",
+          gap: "5px",
+          padding: "0",
+        }}
+      >
+        <span
+          style={{
+            width: "16px",
+            height: "2px",
+            backgroundColor: "#f0ede8",
+            borderRadius: "2px",
+            display: "block",
+          }}
+        />
+        <span
+          style={{
+            width: "16px",
+            height: "2px",
+            backgroundColor: "#f0ede8",
+            borderRadius: "2px",
+            display: "block",
+          }}
+        />
+        <span
+          style={{
+            width: "16px",
+            height: "2px",
+            backgroundColor: "#f0ede8",
+            borderRadius: "2px",
+            display: "block",
+          }}
+        />
+      </button>
+    </>
   );
 }
