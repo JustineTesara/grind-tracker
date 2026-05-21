@@ -1,0 +1,20 @@
+// src/middleware/auth.js
+import { createClient } from "@supabase/supabase-js";
+
+export async function requireAuth(req, res, next) {
+  const token = req.headers.authorization?.split("Bearer ")[1];
+  if (!token) return res.status(401).json({ error: "No token" });
+
+  const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_KEY,
+  );
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token);
+  if (error) return res.status(401).json({ error: "Invalid token" });
+
+  req.user = user;
+  next();
+}

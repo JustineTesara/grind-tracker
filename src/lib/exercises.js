@@ -1,0 +1,106 @@
+export const EXERCISES = {
+  chest: [
+    "Bench Press",
+    "Incline Bench Press",
+    "Decline Bench Press",
+    "Dumbbell Flyes",
+    "Cable Crossover",
+    "Push-Up",
+    "Chest Dip",
+    "Pec Deck",
+    "Incline Dumbbell Press",
+    "Landmine Press",
+  ],
+  back: [
+    "Deadlift",
+    "Pull-Up",
+    "Chin-Up",
+    "Barbell Row",
+    "Dumbbell Row",
+    "Lat Pulldown",
+    "Seated Cable Row",
+    "T-Bar Row",
+    "Face Pull",
+    "Rack Pull",
+    "Good Morning",
+    "Hyperextension",
+  ],
+  shoulders: [
+    "Overhead Press",
+    "Dumbbell Shoulder Press",
+    "Arnold Press",
+    "Lateral Raise",
+    "Front Raise",
+    "Rear Delt Fly",
+    "Upright Row",
+    "Cable Lateral Raise",
+    "Machine Shoulder Press",
+    "Shrug",
+  ],
+  arms: [
+    "Barbell Curl",
+    "Dumbbell Curl",
+    "Hammer Curl",
+    "Preacher Curl",
+    "Cable Curl",
+    "Concentration Curl",
+    "Tricep Pushdown",
+    "Skull Crusher",
+    "Overhead Tricep Extension",
+    "Close-Grip Bench",
+    "Diamond Push-Up",
+    "Dips",
+  ],
+  legs: [
+    "Squat",
+    "Front Squat",
+    "Leg Press",
+    "Romanian Deadlift",
+    "Leg Curl",
+    "Leg Extension",
+    "Calf Raise",
+    "Hip Thrust",
+    "Lunge",
+    "Bulgarian Split Squat",
+    "Hack Squat",
+    "Goblet Squat",
+    "Sumo Deadlift",
+    "Step-Up",
+  ],
+  core: [
+    "Plank",
+    "Crunch",
+    "Sit-Up",
+    "Leg Raise",
+    "Russian Twist",
+    "Ab Wheel Rollout",
+    "Cable Crunch",
+    "Hanging Leg Raise",
+    "Mountain Climber",
+    "Side Plank",
+  ],
+  cardio: [
+    "Treadmill",
+    "Rowing Machine",
+    "Elliptical",
+    "Stair Climber",
+    "Battle Ropes",
+    "Burpee",
+    "Jump Rope",
+    "Box Jump",
+  ],
+};
+
+// Flat list for searching across all categories
+export const ALL_EXERCISES = Object.entries(EXERCISES).flatMap(([cat, list]) =>
+  list.map((name) => ({ name, category: cat })),
+);
+
+export function searchExercises(query) {
+  if (!query || query.trim().length < 1) return [];
+  const q = query.toLowerCase();
+  return ALL_EXERCISES.filter((e) => e.name.toLowerCase().includes(q)).slice(
+    0,
+    8,
+  );
+}
